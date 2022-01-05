@@ -33,7 +33,7 @@ app.use(
       secret: 'secreto',
       saveUninitialized: true,
       cookie: {
-        maxAge: 60000 * 10,
+        maxAge: process.env.SESSION_DURATION,
       },
     })
   )

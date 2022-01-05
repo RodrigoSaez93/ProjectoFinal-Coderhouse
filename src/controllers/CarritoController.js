@@ -1,5 +1,7 @@
 const CarritoService = require('../services/carritoService')
 const ProductoService=require('../services/productService')
+const OrdenService=require('../services/ordenService')
+const EmailService=require('../services/emailService')
 /**
  * @type CarritoController
  */
@@ -44,7 +46,7 @@ class CarritoController {
     if(req.body.cantidad ==null || req.body.cantidad < 0 ){
       res.status(400).json({message:'Ingrese una cantidad valida'})
     }
-    carrito.items.push({idProducto: producto._id, precio: producto.precio, cantidad: req.body.cantidad})
+    carrito.items.push({idProducto: producto._id, precio: producto.price, cantidad: req.body.cantidad})
     CarritoService.getInstance().update(carrito)
     res.json(carrito)
   }
@@ -54,11 +56,12 @@ class CarritoController {
    * @param {import('express').Response} res
    */
   async deleteProduct(req, res) {
-    const carrito = await CarritoService.getInstance().getByEmail(req.user.email)
+    let carrito = await CarritoService.getInstance().getByEmail(req.user.email)
     if(carrito == null) {
       res.status(400).json({message:'No existe el carrito'})
       return
     }
+    carrito = carrito.toObject()
     const producto= carrito.items.find(prod => prod.idProducto == req.body.id)
     if(producto == null) {
       res.status(400).json({message:'No existe el producto'})
@@ -74,8 +77,9 @@ class CarritoController {
     }
       producto.cantidad= producto.cantidad -req.body.cantidad
       if(producto.cantidad==0){
-        carrito.items = carrito.items.filter(item => item.idProducto == req.body.id)
+        carrito.items = carrito.items.filter(item => item.idProducto != req.body.id)
       }
+      CarritoService.getInstance().update(carrito)
       res.json(carrito)
   }
   /**
@@ -121,10 +125,38 @@ class CarritoController {
     const existentCarrito = await CarritoService.getInstance().get(req.body._id)
     if(existentCarrito == null) {
       res.status(404).json({message: 'Carrito no encontrado'})
+      return
     }
     const carrito = CarritoService.getInstance().update(req.body)
     res.json(carrito)
   }
+
+
+    /**
+   *
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   */
+  async postSubmit(req,res){
+    let carrito = await CarritoService.getInstance().getByEmail(req.user.email)
+    if(carrito==null || carrito.items.lenght ==0){
+      res.status(400).json({message:'Carrito esta vacio'})
+      return
+    }
+      carrito=carrito.toObject()
+      const orden = { ...carrito}
+      orden.estado='Generado'
+      orden.fechaYHora = new Date().toLocaleString()
+      OrdenService.getInstance().update(orden)
+      let total = 0
+      orden.items.forEach(item => total+= (item.precio * item.cantidad))
+      orden.total=total
+      carrito.items= []
+      CarritoService.getInstance().update(carrito)
+      EmailService.getInstance().sendOrderEmail(req.user.email,orden)
+      res.json(orden)
+  }
+
 
   /**
    *

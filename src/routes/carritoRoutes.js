@@ -17,5 +17,6 @@ router.put('/carrito', jwtAuthenticationMiddleware,(req, res) => CarritoControll
 router.delete('/carrito/:id', jwtAuthenticationMiddleware,(req, res) =>CarritoController.getInstance().delete(req, res)
 )
 
+router.post('/carrito/submit',jwtAuthenticationMiddleware,(req,res)=>{CarritoController.getInstance().postSubmit(req,res)} )
 
 module.exports = router
