@@ -1,0 +1,63 @@
+{{> header}}
+<div class="container">
+  <div class="row">
+    <div class="col">
+       <h1>Login de Usuario</h1>
+          <form id="loginForm" action="login" method="post">
+            <div class="mb-3">
+              <label for="txtEmail" class="form-label">Email</label>
+              <input id="txtEmail" name="email" type="text" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="txtPassword" class="form-label">Password</label>
+              <input id="txtPassword" name="password" type="password" class="form-control" />
+            </div>
+            <button id="btnSubmit" type="submit" class="btn btn-primary">Enviar</button>
+            <a href="/signup" class="ml-4">Registrarse</a>
+          </form>
+    </div>
+  </div>
+</div>
+<script>
+  const txtEmail = document.getElementById('txtEmail')
+  const btnSubmit = document.getElementById('btnSubmit')
+  const loginForm = document.getElementById('loginForm')
+  const txtPassword = document.getElementById('txtPassword')
+  const userEmail = sessionStorage.getItem('commerce.email')
+
+  if(userEmail != null) {
+    txtEmail.value = userEmail
+  }
+
+  loginForm.addEventListener('submit', async (e)=> {
+    e.preventDefault()
+    const email = txtEmail.value
+    const password = txtPassword.value
+
+    const objetoLogin = {
+      email: email,
+      password: password
+    }
+
+    const response = await fetch('/api-auth/login', {
+      method: 'post',
+      body: JSON.stringify(objetoLogin),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+    })
+    if(!response.ok) {
+      console.log('Can not login')
+      alert("No se pudo loguear, reintente")
+      return;
+    }
+
+    const result = await response.json()
+    sessionStorage.setItem('commerce.token', result.token)
+    loginForm.submit()
+  })
+
+
+</script>
+{{> footer}}

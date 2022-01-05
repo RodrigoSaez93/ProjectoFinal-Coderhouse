@@ -1,0 +1,103 @@
+{{> header}}
+
+<div class="container">
+  <div class="row">
+    <div class="col">
+       <h1>Productos</h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Descripción</th>
+                    <th>Precio unitario</th>
+                    <th>Categoría</th>
+                    <th>Foto</th>
+                    <th>&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+  </div>
+</div>
+
+<script>
+    let productos = null
+    async function cargarProductos(){
+        const response= await fetch('/api/products')
+        const result= await response.json()
+        result.forEach(producto => {
+            const fila=`
+            <tr> 
+                <td>${producto.descripcion} </td>
+                <td>${producto.price} </td>
+                <td><a href="/productos/${producto.categoria}">${producto.categoria}</a> </td>
+                <td><img src='${producto.foto}' alt='foto'> </td>
+                <td><button class='btn btn-primary' onclick='agregarAlCarrito("${producto._id}")'> Quitar </button> </td>
+
+            </tr>
+            `
+            const tbody = document.querySelector('tbody')
+            
+            tbody.innerHTML = tbody.innerHTML + fila
+        })
+        productos = result
+    }
+
+    async function agregarAlCarrito(idProducto) {
+        const idCarrito = sessionStorage.getItem('commerce.idCarrito')
+        let carrito = null
+        if (idCarrito==null) {
+            carrito={email: '{{email}}',
+                     fechaYhora: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+                     direccion: '',
+                     items: []   }
+            const response = await fetch('/api/carrito', {
+                method: 'post',
+                body: JSON.stringify(carrito),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            carrito = await response.json()
+            sessionStorage.setItem('commerce.idCarrito', carrito._id)
+        }else{
+            const response=await fetch(`/api/carrito/${idCarrito}`)
+            carrito=await response.json()
+        }
+
+        const itemExistente = carrito.items.find(item => item.producto._id == idProducto)
+
+        if(itemExistente != null) {
+            itemExistente.cantidad = itemExistente.cantidad + 1
+        } else {
+            const producto = productos.find(prod => prod._id == idProducto)
+
+            carrito.items.push({
+                    cantidad: 1,
+                    producto: producto
+                })
+        }
+
+        
+
+        const response = await fetch('/api/carrito', {
+            method:'put',
+            body:JSON.stringify(carrito),
+            headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }      
+        })
+
+        if(!response.ok) {
+            alert("Error al agregar el item.")
+        }
+    }
+
+    cargarProductos()
+</script>
+
+{{> footer}}

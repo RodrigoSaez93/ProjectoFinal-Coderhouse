@@ -1,0 +1,98 @@
+{{> header}}
+
+<div class='container'>
+  <div class='row'>
+    <div class='col'>
+      <h1>Hacé tu consulta</h1>
+      <input
+        type='text'
+        placeholder='Email'
+        id='txtEmail'
+        class='form-control mb-3'
+        value='{{email}}'
+        disabled="disabled"
+      />
+    </div>
+  </div>
+  <div class='row'>
+    <div class='col'>
+      <input
+        type='text'
+        id='txtMensaje'
+        class='form-control'
+        placeholder='Ingresá un mensaje '
+      />
+
+    </div>
+  </div>
+  <div class='row mt-2'>
+    <div class='col'>
+      <button id="btnEnviar" class="btn btn-primary">Enviar</button>
+    </div>
+  </div>
+  <div class="row mt-2">
+    <div class="col">
+      <div id="chat" class="chat"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const myEmail = '{{email}}'
+  const ws = new WebSocket("ws://localhost:9898/")
+  ws.onopen = () => {
+    console.log("WebSocket client Connected");
+  }
+
+  const divChat = document.getElementById("chat");
+    ws.onmessage = e => {
+      const data = JSON.parse(e.data);
+     if (data.wsType === "chat") {
+       if(data.email != myEmail) {
+         return;
+       }
+          const mensajeFormateado = formatearMensaje(data);
+          const elementoHtmlMensaje = document.createElement("p");
+          elementoHtmlMensaje.innerHTML = mensajeFormateado;
+          divChat.appendChild(elementoHtmlMensaje);
+    
+      } else if(data.wsType === "chatsArray") {
+          const mensajes = data.payload
+          const mensajesFiltrados = mensajes.filter(msg => msg.email == myEmail)
+          const formateados = mensajesFiltrados.map(formatearMensaje);
+          formateados.forEach(mensajeFormateado => { 
+              const elementoHtmlMensaje = document.createElement("p");
+              elementoHtmlMensaje.innerHTML = mensajeFormateado;
+              divChat.appendChild(elementoHtmlMensaje);
+          })
+      }
+      console.log(`Received: '${e.data}'`);
+  }
+
+  const txtEmail = document.getElementById("txtEmail")
+  const txtMensaje = document.getElementById("txtMensaje")
+  const btnEnviar = document.getElementById("btnEnviar")
+
+  btnEnviar.addEventListener("click", (e)=> {
+    const email = txtEmail.value
+    const mensaje = txtMensaje.value
+    const objetoMensaje = {
+      email: email,
+      type: 'usuario',
+      body: mensaje,
+      wsType: 'chat'
+    }
+
+    ws.send(JSON.stringify(objetoMensaje));
+  })
+
+  function formatearMensaje(objetoMensaje) {
+      return `<span class="fw-bold text-primary">${objetoMensaje.email}</span>
+                  <span class="text-warning">[${objetoMensaje.fechaYHora}]:</span>
+                  <span class="text-success fst-italics">[${objetoMensaje.body}]</span>
+              `
+  }
+
+</script>
+
+{{> footer}}

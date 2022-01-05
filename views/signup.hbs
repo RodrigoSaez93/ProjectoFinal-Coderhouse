@@ -1,0 +1,83 @@
+{{> header}}
+ <div class="container mt-3">
+      <div class="row">
+        <div class="col">
+          <h1>Registro de Usuario</h1>
+          <form>
+             <div class="mb-3">
+              <label for="txtName" class="form-label">Nombre completo</label>
+              <input id="txtName" name="name" type="text" class="form-control" />
+            </div>
+             <div class="mb-3">
+              <label for="txtPhone" class="form-label">Telefono</label>
+              <input id="txtPhone" name="phone" type="text" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="txtEmail" class="form-label">Email</label>
+              <input id="txtEmail" name="email" type="text" class="form-control" />
+            </div> 
+           
+            <div class="mb-3">
+              <label for="txtPassword" class="form-label">Password</label>
+              <input id="txtPassword" name="password" type="password" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="txtRePassword" class="form-label">Repetir password</label>
+              <input id="txtRePassword" name="password-repeat" type="password" class="form-control" />
+            </div>
+            <button id="btnSubmit" class="btn btn-primary">Enviar</button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+    <script>
+      const txtName = document.getElementById('txtName')
+      const txtPhone = document.getElementById('txtPhone')
+      const txtEmail = document.getElementById('txtEmail')
+      const txtPassword = document.getElementById('txtPassword')
+      const txtRePassword = document.getElementById('txtRePassword')
+      const btnSubmit = document.getElementById('btnSubmit')
+
+      btnSubmit.addEventListener('click', async (e) => {
+      e.preventDefault()
+      name = txtName.value
+      phone = txtPhone.value
+      email = txtEmail.value
+      password = txtPassword.value      
+      rePassword = txtRePassword.value
+
+      if(name == "" || phone == "" || email == "" || password == "" ||
+        rePassword == "" || password != rePassword) {
+          return;
+        }
+
+        const objetoUser = {
+        email: email,
+        phone: phone,
+        password: password,
+        name: name
+      }
+
+      const response = await fetch('/api-auth/signup', {
+        method: 'post',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(objetoUser)
+      })
+
+      if(!response.ok) {
+        alert('error')
+        return;
+      }
+
+      const result = await response.json()
+      sessionStorage.setItem('commerce.email', result.user.email)
+      window.location = '/'
+      })
+      
+      
+    </script>
+{{> footer}}
