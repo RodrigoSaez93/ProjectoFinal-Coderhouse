@@ -16,7 +16,7 @@ const ordenModel=require('../persistence/ordenModel')
       }
 
       async list() {
-        return await ordenModel.find()
+        return await ordenModel.find({})
       }
 
       async update(orden) {

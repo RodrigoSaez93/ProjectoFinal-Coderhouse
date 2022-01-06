@@ -20,7 +20,9 @@ const carritoRoutes =require('./routes/carritoRoutes')
 const frontendRoutes=require('./routes/frontendRoutes')
 const mensajeRoutes=require('./routes/messageRoutes')
 const authRoutes=require('./routes/authRoutes')
-
+const configRoutes=require('./routes/configRoutes')
+const ordenRoutes=require('./routes/ordenRoutes')
+const uploadRoutes=require('./routes/upLoadRoutes')
 main()
   .then(() => console.log('Base de datos conectada'))
   .catch((err) => console.log(err))
@@ -33,7 +35,7 @@ app.use(
       secret: 'secreto',
       saveUninitialized: true,
       cookie: {
-        maxAge: process.env.SESSION_DURATION,
+        maxAge: +process.env.SESSION_DURATION,
       },
     })
   )
@@ -43,7 +45,11 @@ app.use('/api', carritoRoutes)
 app.use('/', frontendRoutes)
 app.use('/', authRoutes)
 app.use('/api', mensajeRoutes)
-
+app.use('/', configRoutes)
+app.use('/',userRoutes)
+app.use('/', ordenRoutes)
+app.use("/api", uploadRoutes);
+app.use('/images', express.static('images'))
 app.listen(port, () => {
   console.log('App listening on port ', port)
 })

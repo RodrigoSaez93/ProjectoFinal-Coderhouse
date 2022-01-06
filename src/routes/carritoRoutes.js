@@ -1,5 +1,4 @@
 const express = require('express')
-const req = require('express/lib/request')
 const router = express.Router()
 const jwtAuthenticationMiddleware=require('../middleware/jwtAuthenticationMiddleware')
 const CarritoController = require('../controllers/CarritoController')

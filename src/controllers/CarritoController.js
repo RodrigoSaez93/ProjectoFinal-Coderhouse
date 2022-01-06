@@ -144,15 +144,17 @@ class CarritoController {
       return
     }
       carrito=carrito.toObject()
-      const orden = { ...carrito}
+      let orden = { ...carrito}
       orden.estado='Generado'
       orden.fechaYHora = new Date().toLocaleString()
-      OrdenService.getInstance().update(orden)
       let total = 0
+      delete orden._id
       orden.items.forEach(item => total+= (item.precio * item.cantidad))
       orden.total=total
+      orden = await OrdenService.getInstance().insert(orden)
+
       carrito.items= []
-      CarritoService.getInstance().update(carrito)
+      await CarritoService.getInstance().update(carrito)
       EmailService.getInstance().sendOrderEmail(req.user.email,orden)
       res.json(orden)
   }

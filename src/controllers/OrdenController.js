@@ -53,5 +53,13 @@ const OrdenService=require('../services/ordenService')
    }
     res.json(orden)
   }
+  static getInstance() {
+    if (instance == null) {
+      instance = new OrdenController()
+    }
+
+    return instance
+  }
 
   }
+  module.exports=OrdenController
