@@ -3,12 +3,13 @@ const router = express.Router()
 const jwtAuthenticationMiddleware=require('../middleware/jwtAuthenticationMiddleware')
 const CarritoController = require('../controllers/CarritoController')
 const validateBody = require('../middleware/validateBody')
-const   carrtioValidator=require('../validator/carrito')
+const {addOrDeleteSchema}=require('../validator/carrito')
+
 
 router.get('/carrito', jwtAuthenticationMiddleware,(req, res) =>
 CarritoController.getInstance().getOneByEmail(req, res)
 ) 
-router.post('/carrito/add',jwtAuthenticationMiddleware,(req,res)=> CarritoController.getInstance().addProduct(req,res))
+router.post('/carrito/add',validateBody(addOrDeleteSchema),jwtAuthenticationMiddleware,(req,res)=> CarritoController.getInstance().addProduct(req,res))
 router.post('/carrito/delete',jwtAuthenticationMiddleware,(req,res)=> CarritoController.getInstance().deleteProduct(req,res))
 router.get('/carrito/:id', jwtAuthenticationMiddleware,(req, res) =>
 CarritoController.getInstance().getOne(req, res)

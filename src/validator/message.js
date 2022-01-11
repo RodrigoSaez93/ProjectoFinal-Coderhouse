@@ -1,10 +1,10 @@
 const joi = require('joi')
 
 const messageSchema = joi.object({
-    email: joi.String().required(),
-  type: joi.String().required(),
-  fechaYHora: joi.String().required(),
-  body: joi.String().required()
+    email: joi.string().required(),
+    type: joi.string().required(),
+    fechaYHora: joi.string().required(),
+    body: joi.string().required()
 })
 
-module.exports = messageSchema
+module.exports = {messageSchema}

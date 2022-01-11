@@ -6,4 +6,4 @@ const productoSchema = joi.object({
     categoria: joi.string().required()
 })
 
-module.exports = { ProductoSchema: productoSchema }
+module.exports = {  productoSchema }

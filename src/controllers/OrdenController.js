@@ -30,9 +30,11 @@ const OrdenService=require('../services/ordenService')
         const orden = await OrdenService.getInstance().get(req.body.id)
         if(orden==null){
           res.status(400).json({message:'No existe la orden'})
+          return
         }
         if(orden.estado !='Generado'){
           res.status(400).json({message:'El estado de la orden debe ser generada'})
+          return
         }
         orden.estado='Finalizado'
         OrdenService.getInstance().update(orden)
