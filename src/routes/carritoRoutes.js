@@ -2,6 +2,8 @@ const express = require('express')
 const router = express.Router()
 const jwtAuthenticationMiddleware=require('../middleware/jwtAuthenticationMiddleware')
 const CarritoController = require('../controllers/CarritoController')
+const validateBody = require('../middleware/validateBody')
+const   carrtioValidator=require('../validator/carrito')
 
 router.get('/carrito', jwtAuthenticationMiddleware,(req, res) =>
 CarritoController.getInstance().getOneByEmail(req, res)
