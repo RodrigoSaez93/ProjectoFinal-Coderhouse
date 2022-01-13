@@ -13,7 +13,6 @@ externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
 servers:
-- url: https://localhost:8943
 - url: http://localhost:8080
 tags:
 - name: commerce
@@ -21,8 +20,7 @@ tags:
   externalDocs:
     description: Find out more
     url: http://swagger.io
-- name: store
-  description: Access to Petstore orders
+
 - name: user
   description: Operations about user
   externalDocs:
@@ -36,34 +34,37 @@ paths:
       summary: list
       
       responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
         400:
           description: Invalid ID supplied
           content: {}
         404:
-          description: Pet not found
+          description: Product not found
           content: {}
         405:
           description: Validation exception
           content: {}
-      security:
-      - petstore_auth:
-        - write:pets
-        - read:pets
-      x-codegen-request-body-name: body
     post:
       tags:
       - product
-      summary: Agregar nuevo producto
+      summary: Adds new product
       operationId: addProduct
       requestBody:
         description: El producto a agregar
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Pet'
+              $ref: '#/components/schemas/Product'
           application/xml:
             schema:
-              $ref: '#/components/schemas/Pet'
+              $ref: '#/components/schemas/Product'
         required: true
       responses:
         405:
@@ -86,86 +87,72 @@ paths:
         400:
           description: Invalid ID supplied
           content: {}
-        404:
-          description: Pet not found
-          content: {}
         405:
           description: Validation exception
           content: {}
-      security:
-      - petstore_auth:
-        - write:pets
-        - read:pets
-      x-codegen-request-body-name: body
   /carrito:
     get:
       tags:
       - carrito
-      summary: Lista el Carrito
+      summary: List the cart
       description: Muliple tags can be provided with comma separated strings. Use         tag1,
         tag2, tag3 for testing.
-      operationId: findPetsByTags
-      parameters:
-      - name: tags
-        in: query
-        description: Tags to filter by
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: array
-          items:
-            type: string
+      operationId: listTheCart
       responses:
         200:
           description: successful operation
           content:
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Pet'
-        400:
-          description: Invalid tag value
-          content: {}
+                  $ref: '#/components/schemas/Carrito'
   /carrito/add:
     post:
       tags:
       - carrito
-      summary: Crear un nuevo carrito
-      description: Returns a single pet
-      operationId: getPetById
-     
+      summary: Adds a new product to cart
+      description: Adds a product to cart
+      operationId: addProductToCart
+      requestBody:
+        description: The product to add
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOrDeleteToCarrito'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/AddOrDeleteToCarrito'
+        required: true
       responses:
         200:
           description: successful operation
           content:
             application/xml:
               schema:
-                $ref: '#/components/schemas/Pet'
+                $ref: '#/components/schemas/Carrito'
             application/json:
               schema:
-                $ref: '#/components/schemas/Pet'
+                $ref: '#/components/schemas/Carrito'
         400:
           description: Invalid ID supplied
           content: {}
-        404:
-          description: Pet not found
-          content: {}
-      security:
-      - api_key: []
   /carrito/delete:
     post:
       tags:
       - carrito
-      summary: Borrar Carrito
+      summary: Delete Carrito
       operationId: uploadFile
-     
+      requestBody:
+        description: El producto a eliminar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOrDeleteToCarrito'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/AddOrDeleteToCarrito'
+        required: true
     
       responses:
         200:
@@ -173,13 +160,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/Carrito'
   /carrito/submit:
     post:
       tags:
       - carrito
-      summary: Returns pet inventories by status
-      description: Returns a map of status codes to quantities
+      summary: Submits a cart
+      description: Returns the new order
       operationId: getInventory
       responses:
         200:
@@ -187,19 +174,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties:
-                  type: integer
-                  format: int32
-      security:
-      - api_key: []
+                $ref: '#/components/schemas/Order'
+
   /orden/list:
     get:
       tags:
       - orden
-      summary: Lista la Orden
-      
-         
+      summary: List the orders
       responses:
         200:
           description: successful operation
@@ -210,15 +191,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
-        400:
-          description: Invalid Order
-          content: {}
-      x-codegen-request-body-name: body
   /orden/{Id}:
     get:
       tags:
       - orden
-      summary: Orden Listada por ID
+      summary: Gets an order by id
       description: For valid response try integer IDs with value >= 1 and <= 10.         Other
         values will generated exceptions
       operationId: getOrderById
@@ -228,10 +205,8 @@ paths:
         description: ID of orden that needs to be fetched
         required: true
         schema:
-          maximum: 10.0
-          minimum: 1.0
-          type: integer
-          format: int64
+          example: 61e07d2b70e95b46961df136
+          type: string
       responses:
         200:
           description: successful operation
@@ -259,35 +234,27 @@ paths:
       requestBody:
         description: Created user object
         content:
-          '*/*':
+          'application/json':
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/UserSignup'
         required: true
       responses:
         default:
           description: successful operation
           content: {}
-      x-codegen-request-body-name: body
- 
+
   /user/login:
-    get:
+    post:
       tags:
       - user
       summary: Logs user into the system
       operationId: loginUser
-      parameters:
-      - name: username
-        in: query
-        description: The user name for login
-        required: true
-        schema:
-          type: string
-      - name: password
-        in: query
-        description: The password for login in clear text
-        required: true
-        schema:
-          type: string
+      requestBody:
+        description: User data to login
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/UserLogin'
       responses:
         200:
           description: successful operation
@@ -318,7 +285,13 @@ paths:
       tags:
       - orden
       summary: Completar una orden
-    
+      requestBody:
+        description: The order id to mark as complete
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/OrderComplete'
+        required: true
       responses:
         200:
           description: successful operation
@@ -365,33 +338,31 @@ paths:
           content:
             application/xml:
               schema:
-                type: string
+                $ref: '#/components/schemas/Config'
             application/json:
               schema:
-                type: string
-        400:
-          description: Invalid username/password supplied
-          content: {}
+                $ref: '#/components/schemas/Config'
           
   /image/upload:
     post:
       tags:
-              - imagen
+        - imagen
       summary: Sube imagen y devuelve la direccion
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                idProducto:
+                  type: string
+                  example: 61e07d2b70e95b46961df136
+                file:
+                  type: string
+                  format: binary
       responses:
         200:
           description: successful operation
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the user
-              schema:
-                type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when token expires
-              schema:
-                type: string
-                format: date-time
           content:
             application/xml:
               schema:
@@ -404,13 +375,68 @@ paths:
           content: {}
 components:
   schemas:
+    AddOrDeleteToCarrito:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 61e07d2b70e95b46961df136
+        cantidad: 
+          type: integer
+          example: 7
+    UserLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          example: rodrigosaez@gmail.com
+        password:
+          type: string
+          example: the_password_2011!
+    UserSignup:
+      type: object
+      properties:
+        email:
+          type: string
+          example: rodrigosaez@gmail.com
+        password:
+          type: string
+          example: the_password_2011!
+        name: 
+          type: string
+          example: 'Rodrigo Saez'
+        phone:
+          type: number
+          example: 5493512582919
+    OrderComplete:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 61e07d2b70e95b46961df136
+    Config:
+      type:
+        object
+      properties:
+        db_mongo: 
+          type: string
+        token_secret: 
+          type: string
+        sender_email:
+          type: string
+        sender_password:
+          type: string
+        session_duration:
+          type: integer
+        port:
+          type: integer
     Order:
       type: object
       properties:
         id:
           type: integer
           format: int64
-        petId:
+        OrderId:
           type: integer
           format: int64
         quantity:
@@ -431,107 +457,47 @@ components:
           default: false
       xml:
         name: Order
-    Category:
+    Carrito:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-      xml:
-        name: Category
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        username:
-          type: string
-        firstName:
-          type: string
-        lastName:
-          type: string
         email:
           type: string
-        password:
+        fechaYHora:
           type: string
-        phone:
+        direccion:
           type: string
-        userStatus:
-          type: integer
-          description: User Status
-          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemCarrito'
       xml:
-        name: User
-    Tag:
+        name: Carrito
+    ItemCarrito:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-        name:
+        cantidad:
+          type: number
+        idProducto:
           type: string
-      xml:
-        name: Tag
-    Pet:
+        precio: 
+          type: number
+    Product:
       required:
       - name
       - photoUrls
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-        category:
-          $ref: '#/components/schemas/Category'
-        name:
+        foto:
+          type: string
+          example: 'https://www.google.com/image.jpg'
+        price:
+          type: number
+          example: 10.50
+        descripcion:
           type: string
           example: doggie
-        photoUrls:
-          type: array
-          xml:
-            name: photoUrl
-            wrapped: true
-          items:
-            type: string
-        tags:
-          type: array
-          xml:
-            name: tag
-            wrapped: true
-          items:
-            $ref: '#/components/schemas/Tag'
-        status:
+        category:
           type: string
-          description: pet status in the store
-          enum:
-          - available
-          - pending
-          - sold
+          description: product category in the store
       xml:
-        name: Pet
-    ApiResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        type:
-          type: string
-        message:
-          type: string
-  securitySchemes:
-    petstore_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: http://petstore.swagger.io/oauth/dialog
-          scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+        name: Product
